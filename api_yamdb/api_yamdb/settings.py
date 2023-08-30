@@ -11,6 +11,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+# Кастомная модель Юзера
+AUTH_USER_MODEL = 'reviews.models.User'
+
 
 # Application definition
 
