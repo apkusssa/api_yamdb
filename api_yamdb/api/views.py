@@ -45,4 +45,3 @@ class GenreViewSet(mixins.ListModelMixin,
     lookup_field = 'slug'
 
 
-
