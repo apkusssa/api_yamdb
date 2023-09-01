@@ -3,11 +3,29 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+
+    ROLE_CHOICES = [
+        (USER, 'user'),
+        (ADMIN, 'admin'),
+        (MODERATOR, 'moderator')
+    ]
     username = models.CharField(max_length=25, unique=True)
     email = models.EmailField(max_length=254, unique=True)
     first_name = models.CharField('Имя', max_length=25)
     last_name = models.CharField('Фамилия', max_length=25)
-    confirmation_code = models.CharField('Код подтверждения', max_length=256)
+    confirmation_code = models.CharField(
+        'Код подтверждения',
+        max_length=256,
+        null=True,
+        blank=False,
+        default='XXXX')
+    role = models.CharField(
+        'Роль',
+        max_length=25,
+        choices=ROLE_CHOICES)
 
     class Meta:
         verbose_name = 'Пользователь'
