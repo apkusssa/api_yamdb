@@ -48,6 +48,7 @@ def users_create(row):
         role=row[3],
         first_name=row[4],
         last_name=row[5],
+        bio=row[6],
     )
 
 
