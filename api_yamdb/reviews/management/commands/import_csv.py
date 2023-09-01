@@ -1,20 +1,9 @@
 import csv
 import os
-
 from django.conf import settings
 from django.core.management.base import BaseCommand
-
-from reviews.models import (Category, Comment, CustomUser, Genre, GenreTitle,
+from reviews.models import (Category, Comment, User, Genre, GenreTitle,
                             Review, Title)
-
-
-def titles_create(row):
-    Title.objects.get_or_create(
-        id=row[0],
-        name=row[1],
-        year=row[2],
-        category_id=row[3],
-    )
 
 
 def category_create(row):
@@ -33,23 +22,32 @@ def genre_create(row):
     )
 
 
+def titles_create(row):
+    Title.objects.get_or_create(
+        id=row[0],
+        name=row[1],
+        year=row[2],
+        category_id=row[3],
+    )
+
+
 def genre_title_create(row):
     GenreTitle.objects.get_or_create(
         id=row[0],
-        genre_id=row[2],
         title_id=row[1],
+        genre_id=row[2],
+
     )
 
 
 def users_create(row):
-    CustomUser.objects.get_or_create(
+    User.objects.get_or_create(
         id=row[0],
         username=row[1],
         email=row[2],
         role=row[3],
-        bio=row[4],
-        first_name=row[5],
-        last_name=row[6],
+        first_name=row[4],
+        last_name=row[5],
     )
 
 
@@ -74,7 +72,7 @@ def comment_create(row):
     )
 
 
-csv = {
+csv_files = {
     'category.csv': category_create,
     'genre.csv': genre_create,
     'titles.csv': titles_create,
@@ -86,13 +84,12 @@ csv = {
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **kwargs):
+    def handle(self, *args, **options):
         path = os.path.join(settings.BASE_DIR, 'static/data/')
-        for key in csv.keys():
-            with open(path + key, 'r', encoding='utf-8') as csvfile:
-                reader = csv.reader(csvfile)
+        for key in csv_files.keys():
+            with open(path + key, 'r') as f:
+                reader = csv.reader(f)
                 next(reader)
                 for row in reader:
-                    csv[key](row)
+                    csv_files[key](row)
         self.stdout.write(self.style.SUCCESS('Data imported successfully'))
-
