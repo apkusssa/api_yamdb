@@ -4,10 +4,45 @@ from reviews.models import Title, Category, Genre, Review, Comment, User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Просто сериализатор Юзера пока не решил куда его применять."""
     class Meta:
         model = User
         fields = ('id', 'username', 'email',
-                  'first_name', 'last_name')
+                  'first_name', 'last_name', 'bio')
+
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    """Сериализатор для регистрации новых пользователей."""
+    class Meta:
+        model = User
+        fields = ('username', 'email')
+
+    def validate_username(self, data):
+        if data.lower() == 'me':
+            raise serializers.ValidationError('Использовать имя "me" запрещено.')
+        return data
+
+    def validate_email(self, data):
+        if User.objects.filter(email=data).exists():
+            raise serializers.ValidationError('Пользователь с таким email уже существует.')
+        return data
+
+
+class UserTokenSerializer(serializers.Serializer):
+    """Сериализатор для получения JWT-токена."""
+    username = serializers.CharField(max_length=150)
+    confirmation_code = serializers.CharField()
+
+    def validate(self, data):
+        username = data.get('username')
+        confirmation_code = data.get('confirmation_code')
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            raise serializers.ValidationError('Пользователь не найден.')
+        if user.confirmation_code != confirmation_code:
+            raise serializers.ValidationError('Неправильный код подтверждения.')
+        return data
 
 
 class CategorySerializer(serializers.ModelSerializer):
