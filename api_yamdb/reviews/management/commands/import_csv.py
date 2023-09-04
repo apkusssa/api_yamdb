@@ -1,9 +1,10 @@
 import csv
 import os
+
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from reviews.models import (Category, Comment, User, Genre, GenreTitle,
-                            Review, Title)
+
+from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title, User
 
 
 def category_create(row):
@@ -36,7 +37,6 @@ def genre_title_create(row):
         id=row[0],
         title_id=row[1],
         genre_id=row[2],
-
     )
 
 
@@ -74,23 +74,23 @@ def comment_create(row):
 
 
 csv_files = {
-    'category.csv': category_create,
-    'genre.csv': genre_create,
-    'titles.csv': titles_create,
-    'genre_title.csv': genre_title_create,
-    'users.csv': users_create,
-    'review.csv': review_create,
-    'comments.csv': comment_create,
+    "category.csv": category_create,
+    "genre.csv": genre_create,
+    "titles.csv": titles_create,
+    "genre_title.csv": genre_title_create,
+    "users.csv": users_create,
+    "review.csv": review_create,
+    "comments.csv": comment_create,
 }
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        path = os.path.join(settings.BASE_DIR, 'static/data/')
+        path = os.path.join(settings.BASE_DIR, "static/data/")
         for key in csv_files.keys():
-            with open(path + key, 'r') as f:
+            with open(path + key, "r") as f:
                 reader = csv.reader(f)
                 next(reader)
                 for row in reader:
                     csv_files[key](row)
-        self.stdout.write(self.style.SUCCESS('Data imported successfully'))
+        self.stdout.write(self.style.SUCCESS("Data imported successfully"))
