@@ -6,3 +6,65 @@
 Благодарные или возмущённые пользователи оставляют к произведениям текстовые отзывы и ставят произведению оценку в диапазоне от одного до десяти (целое число); из пользовательских оценок формируется усреднённая оценка произведения — рейтинг (целое число). На одно произведение пользователь может оставить только один отзыв.
 Пользователи могут оставлять комментарии к отзывам.
 Добавлять отзывы, комментарии и ставить оценки могут только аутентифицированные пользователи.
+
+### Как запустить проект:
+
+Клонировать репозиторий и перейти в него в командной строке:
+
+```
+git clone https://github.com/apkusssa/api_yamdb.git
+```
+
+```
+cd api_yamdb
+```
+
+Cоздать и активировать виртуальное окружение:
+
+```
+python3 -m venv env
+```
+
+```
+source env/bin/activate
+```
+
+Установить зависимости из файла requirements.txt:
+
+```
+python3 -m pip install --upgrade pip
+```
+
+```
+pip install -r requirements.txt
+```
+
+Выполнить миграции:
+
+```
+python3 manage.py migrate
+```
+
+Запустить проект:
+
+```
+python3 manage.py runserver
+```
+
+### Документация по работе с api находится по адресу:
+```
+http://127.0.0.1:8000/redoc/
+```
+
+### Используемые технологии:
+
+![DjangoREST](https://img.shields.io/badge/DJANGO-REST-ff1709?style=for-the-badge&logo=django&logoColor=white&color=ff1709&labelColor=gray)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
+
+### Авторы проекта:
+
+Афанасий Павлов <br />
+Татьяна Диденко <br />
+Сергей Воротынцев
