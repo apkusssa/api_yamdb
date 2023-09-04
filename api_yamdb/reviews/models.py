@@ -4,11 +4,12 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
-class User(AbstractUser):
-    USER = 'user'
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
+USER = 'user'
+ADMIN = 'admin'
+MODERATOR = 'moderator'
 
+
+class User(AbstractUser):
     ROLE_CHOICES = [
         (USER, 'user'),
         (ADMIN, 'admin'),
