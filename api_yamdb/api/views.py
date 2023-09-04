@@ -1,10 +1,12 @@
 from django.db.models import Avg
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
+from .pagination import CategoryPagination
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import filters, mixins, status, viewsets, permissions
+from .filters import TitleFilterBackend
 
 from reviews.models import Category, Genre, Review, Title, User
 from .permissions import IsAdminOrReadOnly
@@ -37,11 +39,12 @@ class UserRegistrationViewSet(mixins.CreateModelMixin,
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(
-        Avg("reviews__score")
+        rating=Avg("reviews__score")
     ).order_by("name")
-    serializer_class = TitleSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = [DjangoFilterBackend]
+    filterset_class = TitleFilterBackend
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
         if self.action in ('retrieve', 'list'):
