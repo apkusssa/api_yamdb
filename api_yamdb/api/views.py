@@ -62,7 +62,6 @@ class CategoryViewSet(mixins.ListModelMixin,
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
-    pagination_class = CategoryPagination
 
 
 class GenreViewSet(mixins.ListModelMixin,
