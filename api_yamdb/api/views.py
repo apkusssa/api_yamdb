@@ -4,15 +4,17 @@ from django.contrib.auth.tokens import default_token_generator
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
 from rest_framework import filters, mixins, status, viewsets, permissions
 
 from reviews.models import Category, Genre, Review, Title, User
 from .permissions import IsAdminOrReadOnly
 from .serializers import (CategorySerializer, GenreSerializer, TitleReadSerializer,
-                          TitleSerializer, UserRegistrationSerializer)
+                          TitleSerializer, UserRegistrationSerializer,
+                          UserTokenSerializer)
 
 
-class UserRegistrationViewSet(mixins.CreateModelMixin,
+class UserSignUpViewSet(mixins.CreateModelMixin,
                         viewsets.GenericViewSet):
     """Вьюсет для создания обьекта класса User."""
     queryset = User.objects.all()
@@ -33,6 +35,36 @@ class UserRegistrationViewSet(mixins.CreateModelMixin,
             from_email = 'afonyapav@mail.ru'
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserGetTokenViewSet(mixins.CreateModelMixin,
+                          viewsets.GenericViewSet):
+    """Вьюсет для получения токена."""
+    queryset = User.objects.all()
+    serializer_class = UserTokenSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            confirmation_code = serializer.validated_data['confirmation_code']
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({'username': 'Пользователь не найден.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if user.confirmation_code == confirmation_code:
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key},
+                                status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    {'confirmation_code': 'Неправильный код подтверждения.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
