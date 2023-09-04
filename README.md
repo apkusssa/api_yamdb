@@ -55,6 +55,10 @@ python3 manage.py runserver
 ```
 http://127.0.0.1:8000/redoc/
 ```
+### Импорт из csv файлов в базу осуществляется коммандой:
+```angular2html
+python3 manage.py import_csv
+```
 
 ### Используемые технологии:
 
