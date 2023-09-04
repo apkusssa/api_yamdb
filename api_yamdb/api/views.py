@@ -1,7 +1,6 @@
 from django.db.models import Avg
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
-from .pagination import CategoryPagination
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
