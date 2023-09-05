@@ -3,7 +3,8 @@ from django.core.mail import send_mail
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-
+from rest_framework.pagination import (LimitOffsetPagination,
+                                       PageNumberPagination)
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
@@ -87,8 +88,12 @@ class UserGetTokenViewSet(mixins.CreateModelMixin,
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserAdminSerializer
-    permission_classes = (IsAuthenticated, IsAdminUser,)
+    serializer_class = UserSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+    lookup_field = 'username'
+    http_method_names = ['get', 'patch', 'post', 'delete']
+    pagination_class = PageNumberPagination
+    filter_backends = (filters.SearchFilter,)
 
     @action(
         methods=['GET', 'PATCH'],
@@ -96,22 +101,13 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
         url_path='me')
     def get_current_user_info(self, request):
-        serializer = UserAdminSerializer(request.user)
-        if request.method == 'PATCH':
-            if request.user.is_admin:
-                serializer = UserAdminSerializer(
-                    request.user,
-                    data=request.data,
-                    partial=True)
-            else:
-                serializer = UserSerializer(
-                    request.user,
-                    data=request.data,
-                    partial=True)
-            serializer.is_valid(raise_exception=True)
+        serializer = UserAdminSerializer(request.user,
+                                         data=request.data,
+                                         partial=True)
+        serializer.is_valid(raise_exception=True)
+        if request.method == "PATCH":
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TitleViewSet(viewsets.ModelViewSet):

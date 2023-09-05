@@ -7,11 +7,22 @@ from reviews.models import Category, Comment, Genre, Review, Title, User
 
 class UserAdminSerializer(serializers.ModelSerializer):
     """Просто сериализатор Юзера пока не решил куда его применять."""
+    username = serializers.RegexField(regex=r'^[\w.@+-]+$',
+                                      max_length=150,
+                                      required=True)
 
     class Meta:
         model = User
-        fields = ("id", "username", "email", "first_name",
-                  "last_name", "bio", "role")
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'bio',
+            'role'
+        )
+        read_only_fields = ("role",)
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -19,17 +30,35 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "username", "email", "first_name",
+        fields = ("username", "email", "first_name",
                   "last_name", "bio", "role")
-        read_only_fields = ("role")
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Сериализатор для регистрации новых пользователей."""
+    email = serializers.EmailField(max_length=254, required=True)
+    username = serializers.RegexField(max_length=150,
+                                      required=True,
+                                      regex=r'^[\w.@+-]+$')
+
+    def validate(self, data):
+        if data.get('username') == 'me':
+            raise serializers.ValidationError('Использование username '
+                                              '"me" запрещено!')
+        if (User.objects.filter(username=data.get('username'))
+                and User.objects.filter(email=data.get('email'))):
+            return data
+        if User.objects.filter(username=data.get('username')):
+            raise serializers.ValidationError('Пользователь с таким username '
+                                              'уже существует.')
+
+        if User.objects.filter(email=data.get('email')):
+            raise serializers.ValidationError('Пользователь с таким email '
+                                              'уже существует.')
+        return data
 
     class Meta:
-        model = User
-        fields = ("username", "email")
+        fields = ("username", "email", "role")
 
     def validate_username(self, username):
         if not re.match(r"^[\w.@+-]+$", username):
