@@ -41,6 +41,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                       required=True,
                                       regex=r'^[\w.@+-]+$')
 
+    class Meta:
+        model = User
+        fields = ("username", "email", "role")
+
     def validate(self, data):
         if data.get('username') == 'me':
             raise serializers.ValidationError('Использование username '
@@ -56,9 +60,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Пользователь с таким email '
                                               'уже существует.')
         return data
-
-    class Meta:
-        fields = ("username", "email", "role")
 
     def validate_username(self, username):
         if not re.match(r"^[\w.@+-]+$", username):
