@@ -123,5 +123,10 @@ REST_FRAMEWORK = {
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_HOST = 'smtp.mail.ru'  # Замените на SMTP-сервер вашего хостинг-поставщика
+EMAIL_PORT = 993  # Порт SMTP-сервера
+EMAIL_USE_TLS = True  # Используйте TLS для безопасной связи с сервером
+EMAIL_HOST_USER = 'apipython@mail.ru'  # Ваш адрес электронной почты
+EMAIL_HOST_PASSWORD = 'Qwertyklava1996'  # Пароль от вашей почты
 
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")

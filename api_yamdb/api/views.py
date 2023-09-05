@@ -51,9 +51,9 @@ class UserSignUpViewSet(mixins.CreateModelMixin,
             subject="Код подтверждения",
             message=f"Ваш код подтверждения: {confirmation_code}",
             recipient_list=(user.email,),
-            from_email="afonyapav@mail.ru",
+            from_email="apipython@mail.ru",
         )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class UserGetTokenViewSet(mixins.CreateModelMixin,
