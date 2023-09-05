@@ -1,6 +1,17 @@
+import re
+
 from rest_framework import serializers
 
 from reviews.models import Category, Comment, Genre, Review, Title, User
+
+
+class UserAdminSerializer(serializers.ModelSerializer):
+    """Просто сериализатор Юзера пока не решил куда его применять."""
+
+    class Meta:
+        model = User
+        fields = ("id", "username", "email", "first_name",
+                  "last_name", "bio", "role")
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -8,7 +19,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "username", "email", "first_name", "last_name", "bio")
+        fields = ("id", "username", "email", "first_name",
+                  "last_name", "bio", "role")
+        read_only_fields = ("role")
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -18,10 +31,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ("username", "email")
 
-    def validate_username(self, data):
-        if data.lower() == "me":
-            raise serializers.ValidationError('Использовать имя "me" запрещено.')
-        return data
+    def validate_username(self, username):
+        if not re.match(r"^[\w.@+-]+$", username):
+            raise serializers.ValidationError(
+                "Некорректное имя пользователя."
+            )
+        if username.lower() == "me":
+            raise serializers.ValidationError(
+                'Использовать имя "me" запрещено.'
+            )
+        return username
 
     def validate_email(self, data):
         if User.objects.filter(email=data).exists():
@@ -45,7 +64,9 @@ class UserTokenSerializer(serializers.Serializer):
         except User.DoesNotExist:
             raise serializers.ValidationError("Пользователь не найден.")
         if user.confirmation_code != confirmation_code:
-            raise serializers.ValidationError("Неправильный код подтверждения.")
+            raise serializers.ValidationError(
+                "Неправильный код подтверждения."
+            )
         return data
 
 
@@ -76,13 +97,16 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField(source="reviews__score__avg", read_only=True)
+    rating = serializers.IntegerField(
+        source="reviews__score__avg", read_only=True
+    )
     category = CategorySerializer()
     genre = GenreSerializer(many=True)
 
     class Meta:
         model = Title
-        fields = ("id", "name", "year", "rating", "description", "genre", "category")
+        fields = ("id", "name", "year", "rating",
+                  "description", "genre", "category")
         read_only_fields = fields
 
 

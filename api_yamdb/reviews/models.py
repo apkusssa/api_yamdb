@@ -18,7 +18,8 @@ class User(AbstractUser):
         blank=True,
     )
     confirmation_code = models.CharField(
-        "Код подтверждения", max_length=256, null=True, blank=False, default="XXXX"
+        "Код подтверждения", max_length=256, null=True,
+        blank=False, default="XXXX"
     )
     role = models.CharField("Роль", max_length=25, choices=ROLE_CHOICES)
 
@@ -60,7 +61,8 @@ class Title(models.Model):
     description = models.TextField("Описание", blank=True)
     genre = models.ManyToManyField(Genre, blank=True, related_name="title")
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, blank=True, null=True, related_name="title"
+        Category, on_delete=models.SET_NULL,
+        blank=True, null=True, related_name="title"
     )
 
     class Meta:
@@ -74,7 +76,8 @@ class Title(models.Model):
 class Review(models.Model):
     text = models.TextField("Текст")
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="reviews", verbose_name="Aвтор"
+        User, on_delete=models.CASCADE,
+        related_name="reviews", verbose_name="Aвтор"
     )
     score = models.PositiveIntegerField(
         verbose_name="Oценка",
@@ -111,7 +114,8 @@ class Review(models.Model):
 class Comment(models.Model):
     text = models.TextField("Текст")
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="comments", verbose_name="Aвтор"
+        User, on_delete=models.CASCADE,
+        related_name="comments", verbose_name="Aвтор"
     )
     pub_date = models.DateTimeField(
         auto_now_add=True, verbose_name="Дата публикации", db_index=True
