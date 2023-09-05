@@ -3,8 +3,13 @@ from django.core.mail import send_mail
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+
 from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
+
 
 from reviews.models import Category, Genre, Review, Title, User
 
@@ -17,11 +22,15 @@ from .serializers import (
     ReviewSerializer,
     TitleReadSerializer,
     TitleSerializer,
+    UserAdminSerializer,
     UserRegistrationSerializer,
+    UserSerializer,
+    UserTokenSerializer
 )
 
 
-class UserRegistrationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+class UserSignUpViewSet(mixins.CreateModelMixin,
+                        viewsets.GenericViewSet):
     """Вьюсет для создания обьекта класса User."""
 
     queryset = User.objects.all()
@@ -32,7 +41,9 @@ class UserRegistrationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         serializer = UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         user, _ = User.objects.get_or_create(**serializer.validated_data)
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
@@ -44,9 +55,69 @@ class UserRegistrationViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class UserGetTokenViewSet(mixins.CreateModelMixin,
+                          viewsets.GenericViewSet):
+    """Вьюсет для получения токена."""
+    queryset = User.objects.all()
+    serializer_class = UserTokenSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            username = serializer.validated_data['username']
+            confirmation_code = serializer.validated_data['confirmation_code']
+            try:
+                user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({'username': 'Пользователь не найден.'},
+                                status=status.HTTP_404_NOT_FOUND)
+            if user.confirmation_code == confirmation_code:
+                token, _ = Token.objects.get_or_create(user=user)
+                return Response({'token': token.key},
+                                status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    {'confirmation_code': 'Неправильный код подтверждения.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserAdminSerializer
+    permission_classes = (IsAuthenticated, IsAdminUser,)
+
+    @action(
+        methods=['GET', 'PATCH'],
+        detail=False,
+        permission_classes=(IsAuthenticated,),
+        url_path='me')
+    def get_current_user_info(self, request):
+        serializer = UserAdminSerializer(request.user)
+        if request.method == 'PATCH':
+            if request.user.is_admin:
+                serializer = UserAdminSerializer(
+                    request.user,
+                    data=request.data,
+                    partial=True)
+            else:
+                serializer = UserSerializer(
+                    request.user,
+                    data=request.data,
+                    partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
+
+
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = (
-        Title.objects.all().annotate(rating=Avg("reviews__score")).order_by("name")
+        Title.objects.all().annotate(
+            rating=Avg("reviews__score")).order_by("name")
     )
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = [DjangoFilterBackend]
