@@ -10,6 +10,8 @@ class UserAdminSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(regex=r'^[\w.@+-]+$',
                                       max_length=150,
                                       required=True)
+    first_name = serializers.CharField(max_length=150)
+    last_name = serializers.CharField(max_length=150)
 
     class Meta:
         model = User
@@ -27,6 +29,8 @@ class UserAdminSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """Просто сериализатор Юзера пока не решил куда его применять."""
+    first_name = serializers.CharField(max_length=150)
+    last_name = serializers.CharField(max_length=150)
 
     class Meta:
         model = User
@@ -40,10 +44,12 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(max_length=150,
                                       required=True,
                                       regex=r'^[\w.@+-]+$')
+    first_name = serializers.CharField(max_length=150, required=False)
+    last_name = serializers.CharField(max_length=150, required=False)
 
     class Meta:
         model = User
-        fields = ("username", "email", "role")
+        fields = ("username", "email", "role", "first_name", "last_name")
 
     def validate(self, data):
         if data.get('username') == 'me':
