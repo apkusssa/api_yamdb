@@ -53,7 +53,7 @@ class UserSignUpViewSet(mixins.CreateModelMixin,
             recipient_list=(user.email,),
             from_email="apipython@mail.ru",
         )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserGetTokenViewSet(mixins.CreateModelMixin,
