@@ -61,45 +61,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                               'уже существует.')
         return data
 
-    def validate_username(self, username):
-        if not re.match(r"^[\w.@+-]+$", username):
-            raise serializers.ValidationError(
-                "Некорректное имя пользователя."
-            )
-        if username.lower() == "me":
-            raise serializers.ValidationError(
-                'Использовать имя "me" запрещено.'
-            )
-        return username
-"""
-    def validate_email(self, data):
-        if User.objects.filter(email=data).exists():
-            raise serializers.ValidationError(
-                "Пользователь с таким email уже существует."
-            )
-        return data
-"""
-
 
 class UserTokenSerializer(serializers.Serializer):
     """Сериализатор для получения JWT-токена."""
 
     username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField()
-"""
-    def validate(self, data):
-        username = data.get("username")
-        confirmation_code = data.get("confirmation_code")
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("Пользователь не найден.")
-        if user.confirmation_code != confirmation_code:
-            raise serializers.ValidationError(
-                "Неправильный код подтверждения."
-            )
-        return data
-"""
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
