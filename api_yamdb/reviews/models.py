@@ -11,8 +11,8 @@ class User(AbstractUser):
     ROLE_CHOICES = [(USER, "user"), (ADMIN, "admin"), (MODERATOR, "moderator")]
     username = models.CharField(max_length=25, unique=True)
     email = models.EmailField(max_length=254, unique=True)
-    first_name = models.CharField("Имя", max_length=25)
-    last_name = models.CharField("Фамилия", max_length=25)
+    first_name = models.CharField("Имя", max_length=150)
+    last_name = models.CharField("Фамилия", max_length=150)
     bio = models.TextField(
         "биография",
         blank=True,

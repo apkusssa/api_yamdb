@@ -83,6 +83,13 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
 
+    def create(self, request):
+        serializer = UserRegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user, created = User.objects.get_or_create(**serializer.validated_data)
+        if created:
+            return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_400_BAD_REQUEST)
+
     @action(
         methods=['GET', 'PATCH'],
         detail=False,
