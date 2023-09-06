@@ -7,9 +7,10 @@ from rest_framework.pagination import (LimitOffsetPagination,
                                        PageNumberPagination)
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.authtoken.models import Token
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import AccessToken
 
 
 from reviews.models import Category, Genre, Review, Title, User
@@ -56,34 +57,21 @@ class UserSignUpViewSet(mixins.CreateModelMixin,
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class UserGetTokenViewSet(mixins.CreateModelMixin,
-                          viewsets.GenericViewSet):
-    """Вьюсет для получения токена."""
-    queryset = User.objects.all()
-    serializer_class = UserTokenSerializer
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            username = serializer.validated_data['username']
-            confirmation_code = serializer.validated_data['confirmation_code']
-            try:
-                user = User.objects.get(username=username)
-            except User.DoesNotExist:
-                return Response({'username': 'Пользователь не найден.'},
-                                status=status.HTTP_404_NOT_FOUND)
-            if user.confirmation_code == confirmation_code:
-                token, _ = Token.objects.get_or_create(user=user)
-                return Response({'token': token.key},
-                                status=status.HTTP_200_OK)
-            else:
-                return Response(
-                    {'confirmation_code': 'Неправильный код подтверждения.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def get_jwt_token(request):
+    serializer = UserTokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = get_object_or_404(
+        User,
+        username=serializer.validated_data["username"]
+    )
+    if default_token_generator.check_token(
+        user, serializer.validated_data["confirmation_code"]
+    ):
+        token = AccessToken.for_user(user)
+        return Response({"token": str(token)}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserViewSet(viewsets.ModelViewSet):
