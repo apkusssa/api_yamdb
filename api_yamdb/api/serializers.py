@@ -1,7 +1,4 @@
-import re
-
 from rest_framework import serializers
-from django.shortcuts import get_object_or_404
 
 
 from reviews.models import Category, Comment, Genre, Review, Title, User
@@ -104,9 +101,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    rating = serializers.IntegerField(
-        source="reviews__score__avg", read_only=True
-    )
+    rating = serializers.IntegerField(read_only=True)
     category = CategorySerializer()
     genre = GenreSerializer(many=True)
 
