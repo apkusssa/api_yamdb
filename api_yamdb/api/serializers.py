@@ -48,7 +48,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("username", "email", "role", "first_name", "last_name")
+        fields = ("username", "email", "role", "first_name", "last_name", "bio")
 
     def validate(self, data):
         if data.get('username') == 'me':
