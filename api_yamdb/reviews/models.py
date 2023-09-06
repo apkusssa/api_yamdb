@@ -21,7 +21,8 @@ class User(AbstractUser):
         "Код подтверждения", max_length=256, null=True,
         blank=False, default="XXXX"
     )
-    role = models.CharField("Роль", max_length=25, choices=ROLE_CHOICES)
+    role = models.CharField("Роль", max_length=25, choices=ROLE_CHOICES,
+                            blank=True, default=USER)
 
     class Meta:
         verbose_name = "Пользователь"
