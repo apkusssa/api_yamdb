@@ -8,7 +8,7 @@ from .views import (
     TitleViewSet,
     ReviewViewSet,
     UserSignUpViewSet,
-    UserGetTokenViewSet,
+    get_jwt_token,
     UserViewSet
 )
 
@@ -17,7 +17,6 @@ router.register(r"categories", CategoryViewSet)
 router.register(r"genres", GenreViewSet)
 router.register(r"titles", TitleViewSet)
 router.register(r"auth/signup", UserSignUpViewSet)
-router.register(r"auth/token", UserGetTokenViewSet)
 router.register(r"users", UserViewSet)
 router.register(r"titles/(?P<title_id>\d+)/reviews",
                 ReviewViewSet, basename="reviews")
@@ -29,4 +28,5 @@ router.register(
 
 urlpatterns = [
     path("v1/", include(router.urls)),
+    path('v1/auth/token/', get_jwt_token),
 ]

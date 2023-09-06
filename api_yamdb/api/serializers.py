@@ -71,13 +71,14 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 'Использовать имя "me" запрещено.'
             )
         return username
-
+"""
     def validate_email(self, data):
         if User.objects.filter(email=data).exists():
             raise serializers.ValidationError(
                 "Пользователь с таким email уже существует."
             )
         return data
+"""
 
 
 class UserTokenSerializer(serializers.Serializer):
@@ -85,7 +86,7 @@ class UserTokenSerializer(serializers.Serializer):
 
     username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField()
-
+"""
     def validate(self, data):
         username = data.get("username")
         confirmation_code = data.get("confirmation_code")
@@ -98,7 +99,7 @@ class UserTokenSerializer(serializers.Serializer):
                 "Неправильный код подтверждения."
             )
         return data
-
+"""
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
