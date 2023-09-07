@@ -2,13 +2,13 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-USER = "user"
-ADMIN = "admin"
-MODERATOR = "moderator"
-
 
 class User(AbstractUser):
-    ROLE_CHOICES = [(USER, "user"), (ADMIN, "admin"), (MODERATOR, "moderator")]
+    ROLE_CHOICES = (
+        ("user", "пользователь"),
+        ("admin", "Администратор"),
+        ("moderator", "Модератор")
+    )
     username = models.CharField(max_length=25, unique=True)
     email = models.EmailField(max_length=254, unique=True)
     first_name = models.CharField("Имя", max_length=150)
@@ -21,8 +21,23 @@ class User(AbstractUser):
         "Код подтверждения", max_length=256, null=True,
         blank=False, default="XXXX"
     )
-    role = models.CharField("Роль", max_length=25, choices=ROLE_CHOICES,
-                            blank=True, default=USER)
+    role = models.CharField(
+        "Роль",
+        max_length=25,
+        choices=ROLE_CHOICES,
+        blank=True,
+        default="user",
+        error_messages={"validators": "Вы выбрали несуществующую роль"}
+    )
+
+    @property
+    def is_admin(self):
+        return self.role == "admin"
+
+    @property
+    def is_moderator(self):
+        return self.role == "moderator"
+    
 
     class Meta:
         verbose_name = "Пользователь"

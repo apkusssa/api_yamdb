@@ -1,4 +1,5 @@
-from django.contrib.auth.tokens import default_token_generator
+import uuid
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
@@ -13,10 +14,10 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 
-from reviews.models import Category, Genre, Review, Title, User
+from reviews.models import Category, Genre, Review, Title
 
 from .filters import TitleFilterBackend
-from .permissions import IsAdminOrReadOnly, OwnerModeratorAdmin
+from .permissions import IsAdminOrReadOnly, OwnerModeratorAdmin, IsAdmin
 from .serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -26,9 +27,12 @@ from .serializers import (
     TitleSerializer,
     UserAdminSerializer,
     UserRegistrationSerializer,
-    UserSerializer,
+    UserMeSerializer,
     UserTokenSerializer
 )
+
+
+User = get_user_model()
 
 
 class UserSignUpViewSet(mixins.CreateModelMixin,
@@ -47,12 +51,15 @@ class UserSignUpViewSet(mixins.CreateModelMixin,
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
         user, _ = User.objects.get_or_create(**serializer.validated_data)
-        confirmation_code = default_token_generator.make_token(user)
+        confirmation_code = str(uuid.uuid4())
+        user.confirmation_code = confirmation_code
+        user.save()
         send_mail(
             subject="Код подтверждения",
             message=f"Ваш код подтверждения: {confirmation_code}",
             recipient_list=(user.email,),
             from_email="apipython@mail.ru",
+            fail_silently=True
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -62,13 +69,12 @@ class UserSignUpViewSet(mixins.CreateModelMixin,
 def get_jwt_token(request):
     serializer = UserTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
+    confirmation_code = serializer.validated_data["confirmation_code"]
     user = get_object_or_404(
         User,
         username=serializer.validated_data["username"]
     )
-    if default_token_generator.check_token(
-        user, serializer.validated_data["confirmation_code"]
-    ):
+    if confirmation_code == user.confirmation_code:
         token = AccessToken.for_user(user)
         return Response({"token": str(token)}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -76,33 +82,35 @@ def get_jwt_token(request):
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    lookup_field = 'username'
-    http_method_names = ['get', 'patch', 'post', 'delete']
+    serializer_class = UserAdminSerializer
+    permission_classes = (IsAdmin,)
+    lookup_field = "username"
+    http_method_names = ['get', 'post', 'patch', 'delete',
+                         'head', 'options', 'trace']
     pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
-
-    def create(self, request):
-        serializer = UserRegistrationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user, created = User.objects.get_or_create(**serializer.validated_data)
-        if created:
-            return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_400_BAD_REQUEST)
+    filterset_fields = ("username",)
+    search_fields = ("username", )
 
     @action(
-        methods=['GET', 'PATCH'],
+        methods=["get", "patch"],
         detail=False,
         permission_classes=(IsAuthenticated,),
+        serializer_class=UserMeSerializer,
         url_path='me')
-    def get_current_user_info(self, request):
-        serializer = UserAdminSerializer(request.user,
-                                         data=request.data,
-                                         partial=True)
-        serializer.is_valid(raise_exception=True)
-        if request.method == "PATCH":
+    def get_user_info(self, request):
+        user = get_object_or_404(User, username=self.request.user)
+        if request.method == 'GET':
+            serializer = self.get_serializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        elif request.method == 'PATCH':
+            serializer = self.get_serializer(
+                user, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
             serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class TitleViewSet(viewsets.ModelViewSet):

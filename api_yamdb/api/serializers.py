@@ -1,40 +1,60 @@
+from django.contrib.auth import get_user_model
+from django.core.validators import RegexValidator
 from rest_framework import serializers
 
+from reviews.models import Category, Comment, Genre, Review, Title
 
-from reviews.models import Category, Comment, Genre, Review, Title, User
+
+User = get_user_model()
 
 
 class UserAdminSerializer(serializers.ModelSerializer):
-    """Просто сериализатор Юзера пока не решил куда его применять."""
-    username = serializers.RegexField(regex=r'^[\w.@+-]+$',
-                                      max_length=150,
-                                      required=True)
-    first_name = serializers.CharField(max_length=150)
-    last_name = serializers.CharField(max_length=150)
+    """Сериализатор Юзера."""
 
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'email',
-            'first_name',
-            'last_name',
-            'bio',
-            'role'
+    ROLE_CHOICES = (
+        ("user", 'Пользователь'),
+        ('moderator', 'Модератор'),
+        ('admin', 'Администратор'),
+    )
+    email = serializers.EmailField(max_length=254, required=True)
+    username = serializers.CharField(
+        max_length=150, required=True, validators=(
+            RegexValidator(r'^[\w.@+-]+\Z'),
         )
-        read_only_fields = ("role",)
+    )
+    role = serializers.ChoiceField(
+        choices=ROLE_CHOICES,
+        default="user"
+    )
 
+    def validate_username(self, value):
+        if value.lower() == "me":
+            raise serializers.ValidationError("Нельзя использовать это имя")
+        return value
 
-
-class UserSerializer(serializers.ModelSerializer):
-    """Просто сериализатор Юзера пока не решил куда его применять."""
-    first_name = serializers.CharField(max_length=150)
-    last_name = serializers.CharField(max_length=150)
+    def validate(self, data):
+        if User.objects.filter(email=data.get("email"),
+                               username=data.get("username")):
+            return data
+        elif User.objects.filter(email=data.get("email")):
+            raise serializers.ValidationError(
+                "Такой email уже используется!"
+            )
+        elif User.objects.filter(username=data.get("username")):
+            raise serializers.ValidationError(
+                "Такое имя пользователя уже используется!"
+            )
+        return data
 
     class Meta:
         model = User
         fields = ("username", "email", "first_name",
                   "last_name", "bio", "role")
+        lookup_field = 'username'
+        extra_kwargs = {
+            "username": {"required": True},
+            "email": {"required": True},
+        }
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -43,28 +63,26 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(max_length=150,
                                       required=True,
                                       regex=r'^[\w.@+-]+$')
-    first_name = serializers.CharField(max_length=150, required=False)
-    last_name = serializers.CharField(max_length=150, required=False)
 
-    class Meta:
-        model = User
-        fields = ("username", "email", "role", "first_name", "last_name", "bio")
-
+  
     def validate(self, data):
-        if data.get('username') == 'me':
+        if data.get("username") == "me":
             raise serializers.ValidationError('Использование username '
                                               '"me" запрещено!')
-        if (User.objects.filter(username=data.get('username'))
-                and User.objects.filter(email=data.get('email'))):
+        if (User.objects.filter(username=data.get("username"))
+                and User.objects.filter(email=data.get("email"))):
             return data
-        if User.objects.filter(username=data.get('username')):
-            raise serializers.ValidationError('Пользователь с таким username '
-                                              'уже существует.')
-
-        if User.objects.filter(email=data.get('email')):
-            raise serializers.ValidationError('Пользователь с таким email '
-                                              'уже существует.')
+        if User.objects.filter(username=data.get("username")):
+            raise serializers.ValidationError("Пользователь с таким username "
+                                              "уже существует.")
+        if User.objects.filter(email=data.get("email")):
+            raise serializers.ValidationError("Пользователь с таким email "
+                                              "уже существует.")
         return data
+    
+    class Meta:
+        model = User
+        fields = ("username", "email")
 
 
 class UserTokenSerializer(serializers.Serializer):
@@ -72,6 +90,30 @@ class UserTokenSerializer(serializers.Serializer):
 
     username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField()
+
+
+class UserMeSerializer(serializers.ModelSerializer):
+    """Сериализатор юзера для изменеия своих данных."""
+
+    username = serializers.CharField(
+        max_length=150, required=True, validators=(
+            RegexValidator(r'^[\w.@+-]+\Z'),
+        )
+    )
+    
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "bio",
+            "role"
+        )
+
+        read_only_fields = ["role"]
+
 
 
 class CategorySerializer(serializers.ModelSerializer):
