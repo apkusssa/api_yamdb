@@ -9,10 +9,6 @@ class User(AbstractUser):
         ("admin", "Администратор"),
         ("moderator", "Модератор")
     )
-    username = models.CharField(max_length=25, unique=True)
-    email = models.EmailField(max_length=254, unique=True)
-    first_name = models.CharField("Имя", max_length=150)
-    last_name = models.CharField("Фамилия", max_length=150)
     bio = models.TextField(
         "биография",
         blank=True,
@@ -37,11 +33,11 @@ class User(AbstractUser):
     @property
     def is_moderator(self):
         return self.role == "moderator"
-    
 
     class Meta:
         verbose_name = "Пользователь"
         verbose_name_plural = "Пользователи"
+        ordering = ("username",)
 
     def __str__(self):
         return self.username

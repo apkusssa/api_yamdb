@@ -1,18 +1,17 @@
 import uuid
+
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from rest_framework.pagination import (LimitOffsetPagination,
-                                       PageNumberPagination)
+
+from rest_framework.pagination import (PageNumberPagination)
 from rest_framework import filters, mixins, permissions, status, viewsets
-from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-
 
 from reviews.models import Category, Genre, Review, Title
 
@@ -91,6 +90,7 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     filterset_fields = ("username",)
     search_fields = ("username", )
+    ordering_fields = ("username",)
 
     @action(
         methods=["get", "patch"],
@@ -141,6 +141,7 @@ class CategoryViewSet(
     filter_backends = (filters.SearchFilter,)
     search_fields = ("name",)
     lookup_field = "slug"
+    ordering_fields = ("name",)
 
 
 class GenreViewSet(

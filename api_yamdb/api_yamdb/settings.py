@@ -115,7 +115,6 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static/"),)
 
 
-
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -135,22 +134,3 @@ SIMPLE_JWT = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
-
-"""
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 5,
-}
-
-EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
-EMAIL_HOST = 'smtp.mail.ru'  # Замените на SMTP-сервер вашего хостинг-поставщика
-EMAIL_PORT = 993  # Порт SMTP-сервера
-EMAIL_USE_TLS = True  # Используйте TLS для безопасной связи с сервером
-EMAIL_HOST_USER = 'apipython@mail.ru'  # Ваш адрес электронной почты
-EMAIL_HOST_PASSWORD = 'Qwertyklava1996'  # Пароль от вашей почты
-
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
-"""

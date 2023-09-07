@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
+
 from rest_framework import serializers
 
 from reviews.models import Category, Comment, Genre, Review, Title
@@ -64,7 +65,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                                       required=True,
                                       regex=r'^[\w.@+-]+$')
 
-  
     def validate(self, data):
         if data.get("username") == "me":
             raise serializers.ValidationError('Использование username '
@@ -79,7 +79,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Пользователь с таким email "
                                               "уже существует.")
         return data
-    
+
     class Meta:
         model = User
         fields = ("username", "email")
@@ -100,7 +100,7 @@ class UserMeSerializer(serializers.ModelSerializer):
             RegexValidator(r'^[\w.@+-]+\Z'),
         )
     )
-    
+
     class Meta:
         model = User
         fields = (
@@ -113,7 +113,6 @@ class UserMeSerializer(serializers.ModelSerializer):
         )
 
         read_only_fields = ["role"]
-
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -169,7 +168,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         request = self.context['request']
         author = request.user
         title_id = self.context.get('view').kwargs.get('title_id')
-        if request.method == "POST" and Review.objects.filter(author=author, title_id=title_id).exists():
+        if request.method == "POST" and \
+            Review.objects.filter(author=author, title_id=title_id).exists():
             raise serializers.ValidationError("Вы уже оставили отзыв")
         return data
 
