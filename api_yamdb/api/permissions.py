@@ -1,19 +1,22 @@
 from rest_framework import permissions
 
-USER = "user"
-ADMIN = "admin"
-MODERATOR = "moderator"
-
 
 class IsAdminOrReadOnly(permissions.BasePermission):
+    """
+    Пользователи с ролью 'admin' имеют доступ к изменению ресурсов,
+    в противном случае только чтение (GET, HEAD, OPTIONS).
+    """
     def has_permission(self, request, view):
         return request.method in permissions.SAFE_METHODS or (
             request.user.is_authenticated
-            and (request.user.is_superuser or request.user.role == ADMIN)
+            and (request.user.is_superuser or request.user.is_admin)
         )
 
 
-class OwnerModeratorAdmin(permissions.BasePermission):
+class IsOwnerOrModeratorOrAdmin(permissions.BasePermission):
+    """
+    Хозяин страницы админ или модератор могут редактировать страницу.
+    """
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
@@ -24,12 +27,15 @@ class OwnerModeratorAdmin(permissions.BasePermission):
         return (
             request.method in permissions.SAFE_METHODS
             or obj.author == request.user
-            or request.user.role == ADMIN
-            or request.user.role == MODERATOR
+            or request.user.is_admin
+            or request.user.is_moderator
         )
 
 
-class IsAdmin(permissions.BasePermission):
+class IsAdminOrSuperuser(permissions.BasePermission):
+    """
+    Админ и суперюзер имеют доступ к ресурсам.
+    """
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated
@@ -43,3 +49,63 @@ class IsAdmin(permissions.BasePermission):
             obj == request.user
             or request.user.is_admin
             or request.user.is_superuser)
+
+'''from enum import Enum
+from rest_framework import permissions
+
+
+class UserRole(Enum):
+
+    USER = "user"
+    ADMIN = "admin"
+    MODERATOR = "moderator"
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    """
+    Пользователи с ролью 'admin' имеют доступ к изменению ресурсов,
+    в противном случае только чтение (GET, HEAD, OPTIONS).
+    """
+    def has_permission(self, request, view):
+        return request.method in permissions.SAFE_METHODS or (
+            request.user.is_authenticated
+            and (request.user.is_superuser or request.user.role == UserRole.ADMIN.value)
+        )
+
+
+class IsOwnerOrModeratorOrAdmin(permissions.BasePermission):
+    """
+    Хозяин страницы админ или модератор могут редактировать страницу.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.method in permissions.SAFE_METHODS
+            or request.user.is_authenticated
+        )
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.method in permissions.SAFE_METHODS
+            or obj.author == request.user
+            or request.user.role == UserRole.ADMIN.value
+            or request.user.role == UserRole.MODERATOR.value
+        )
+
+
+class IsAdminOrSuperuser(permissions.BasePermission):
+    """
+    Админ и суперюзер имеют доступ к ресурсам.
+    """
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and (
+                request.user.is_admin
+                or request.user.is_superuser)
+        )
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            obj == request.user
+            or request.user.is_admin
+            or request.user.is_superuser)'''
