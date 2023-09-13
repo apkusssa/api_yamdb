@@ -4,10 +4,10 @@ from django.core.validators import RegexValidator
 
 
 ROLE_CHOICES = (
-        ("user", "пользователь"),
-        ("admin", "Администратор"),
-        ("moderator", "Модератор")
-    )
+    ("user", "пользователь"),
+    ("admin", "Администратор"),
+    ("moderator", "Модератор")
+)
 
 
 class User(AbstractUser):

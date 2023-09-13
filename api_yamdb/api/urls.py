@@ -18,8 +18,10 @@ v1_router.register(r"genres", GenreViewSet)
 v1_router.register(r"titles", TitleViewSet)
 v1_router.register(r"auth/signup", UserSignUpViewSet)
 v1_router.register(r"users", UserViewSet)
-v1_router.register(r"titles/(?P<title_id>\d+)/reviews",
-                ReviewViewSet, basename="reviews")
+v1_router.register(
+    r"titles/(?P<title_id>\d+)/reviews",
+    ReviewViewSet, basename="reviews"
+)
 v1_router.register(
     r"titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments",
     CommentViewSet,

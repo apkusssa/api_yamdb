@@ -17,7 +17,11 @@ from reviews.models import Category, Genre, Review, Title
 
 from api_yamdb.settings import EMAIL_NAME
 from .filters import TitleFilterBackend
-from .permissions import IsAdminOrReadOnly, IsOwnerOrModeratorOrAdmin, IsAdminOrSuperuser
+from .permissions import (
+    IsAdminOrReadOnly,
+    IsOwnerOrModeratorOrAdmin,
+    IsAdminOrSuperuser
+)
 from .serializers import (
     CategorySerializer,
     CommentSerializer,
@@ -66,7 +70,10 @@ class UserSignUpViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         try:
-            user = User.objects.get(username=username, email=request.data.get("email"))
+            user = User.objects.get(
+                username=username,
+                email=request.data.get("email")
+            )
             self.send_confirmation_code(user)
             return Response(
                 {"detail": "Новый код подтверждения был отправлен."},
