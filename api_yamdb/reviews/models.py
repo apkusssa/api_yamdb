@@ -1,46 +1,9 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
-class User(AbstractUser):
-    ROLE_CHOICES = (
-        ("user", "пользователь"),
-        ("admin", "Администратор"),
-        ("moderator", "Модератор")
-    )
-    bio = models.TextField(
-        "биография",
-        blank=True,
-    )
-    confirmation_code = models.CharField(
-        "Код подтверждения", max_length=256, null=True,
-        blank=False, default="XXXX"
-    )
-    role = models.CharField(
-        "Роль",
-        max_length=25,
-        choices=ROLE_CHOICES,
-        blank=True,
-        default="user",
-        error_messages={"validators": "Вы выбрали несуществующую роль"}
-    )
-
-    @property
-    def is_admin(self):
-        return self.role == "admin"
-
-    @property
-    def is_moderator(self):
-        return self.role == "moderator"
-
-    class Meta:
-        verbose_name = "Пользователь"
-        verbose_name_plural = "Пользователи"
-        ordering = ("username",)
-
-    def __str__(self):
-        return self.username
+User = get_user_model()
 
 
 class Category(models.Model):
