@@ -89,7 +89,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (IsOwnerOrModeratorOrAdmin,)
-    http_method_names = methods 
+    http_method_names = methods
 
     def get_review(self):
         return get_object_or_404(Review, pk=self.kwargs.get("review_id"))

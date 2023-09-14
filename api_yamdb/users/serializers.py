@@ -52,5 +52,5 @@ class UserTokenSerializer(serializers.Serializer):
         max_length=150,
         required=True,
         allow_blank=False,
-        )
+    )
     confirmation_code = serializers.CharField()
