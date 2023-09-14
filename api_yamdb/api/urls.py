@@ -7,6 +7,8 @@ from .views import (
     GenreViewSet,
     TitleViewSet,
     ReviewViewSet,
+)
+from users.views import (
     UserSignUpViewSet,
     get_jwt_token,
     UserViewSet

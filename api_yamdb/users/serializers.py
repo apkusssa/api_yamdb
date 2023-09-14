@@ -48,5 +48,9 @@ class UserMeSerializer(UserSerializer):
 class UserTokenSerializer(serializers.Serializer):
     """Сериализатор для получения JWT-токена."""
 
-    username = serializers.CharField(max_length=150)
+    username = serializers.CharField(
+        max_length=150,
+        required=True,
+        allow_blank=False,
+        )
     confirmation_code = serializers.CharField()
